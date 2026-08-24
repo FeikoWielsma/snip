@@ -43,6 +43,14 @@ There is no browser anywhere in the suite, and that is on purpose. The test
 client calls the ASGI application directly, so there is no server to start and
 no port to wait on.
 
+## A trap worth knowing
+
+The health endpoint is `/api/health`, not the conventional `/healthz`. On Cloud
+Run, `/healthz` is answered by Google's frontend and never reaches your
+container, so a deployment check against it gets Google's 404 page back however
+healthy the service is. `/health`, `/livez` and `/readiness` all pass through
+normally.
+
 ## Configuration
 
 | Variable | Default | Purpose |

@@ -48,10 +48,17 @@ class CreateLink(BaseModel):
     url: str
 
 
-@app.get("/healthz")
-def healthz() -> dict[str, str]:
-    """Liveness probe. Cloud Run uses it, and so does the deploy job when it
-    verifies a release rather than assuming one."""
+@app.get("/api/health")
+def health() -> dict[str, str]:
+    """Liveness probe, used by the deploy job to verify a release rather than
+    assume one.
+
+    Deliberately not `/healthz`. On Cloud Run that exact path is answered by
+    Google's frontend and never reaches the container, so a deploy check
+    against it returns Google's own 404 HTML no matter how healthy the service
+    is. `/health`, `/livez` and `/readiness` all pass through; `/api/health`
+    is used here because the `api` prefix is already reserved against slugs.
+    """
     return {"status": "ok"}
 
 
