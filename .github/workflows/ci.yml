@@ -1,0 +1,68 @@
+# GitHub Actions CI for snip.
+#
+# Kept deliberately small. In the TLG260 course this repository is migrated to
+# GitLab, at which point this file stops doing anything at all, and rebuilding
+# it as a .gitlab-ci.yml is the work of the two days. Each construct below has
+# a direct GitLab equivalent:
+#
+#   runs-on: ubuntu-latest   ->  runner tags and image:
+#   steps: / uses:           ->  before_script: and script:
+#   parallel jobs            ->  stages: and jobs
+#   needs:                   ->  needs:   (same word, same DAG idea)
+#   actions/cache            ->  cache: with key: and paths:
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --frozen
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --frozen
+      - name: Unit and API tests
+        run: uv run pytest tests/unit tests/api --junitxml=junit.xml
+
+  integration:
+    runs-on: ubuntu-latest
+    needs: [test]
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: snip
+          POSTGRES_PASSWORD: snip
+          POSTGRES_DB: snip
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql+psycopg://snip:snip@localhost:5432/snip
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --frozen
+      - run: uv run pytest tests/integration
