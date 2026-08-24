@@ -34,7 +34,7 @@
 
   {% if created %}
   <p class="created">
-    Created <code>/{{ created.slug }}</code> &rarr; {{ created.target_url }}
+    Created <code>{{ request.base_url }}{{ created.slug }}</code> &rarr; {{ created.target_url }}
   </p>
   {% endif %}
   {% if error %}
