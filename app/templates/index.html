@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>snip</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      max-width: 42rem; margin: 4rem auto; padding: 0 1rem; line-height: 1.5;
+    }
+    h1 { font-size: 2rem; margin-bottom: 0.25rem; }
+    p.tagline { margin-top: 0; opacity: 0.7; }
+    form { display: flex; gap: 0.5rem; margin: 2rem 0; }
+    input[type="url"], input[type="text"] { flex: 1; padding: 0.6rem; font-size: 1rem; }
+    button { padding: 0.6rem 1.2rem; font-size: 1rem; cursor: pointer; }
+    .created { padding: 0.75rem 1rem; border-left: 4px solid #2e7d32; background: #2e7d3216; }
+    .error { padding: 0.75rem 1rem; border-left: 4px solid #c62828; background: #c6282816; }
+    table { width: 100%; border-collapse: collapse; margin-top: 2rem; }
+    th, td { text-align: left; padding: 0.4rem 0.5rem; border-bottom: 1px solid #8884; }
+    td.target { overflow-wrap: anywhere; }
+    code { font-family: ui-monospace, "Cascadia Code", monospace; }
+  </style>
+</head>
+<body>
+  <h1>snip</h1>
+  <p class="tagline">A very small URL shortener.</p>
+
+  <form method="post" action="/">
+    <input type="text" name="url" placeholder="example.com/a/very/long/path" required />
+    <button type="submit">Shorten</button>
+  </form>
+
+  {% if created %}
+  <p class="created">
+    Created <code>/{{ created.slug }}</code> &rarr; {{ created.target_url }}
+  </p>
+  {% endif %}
+  {% if error %}
+  <p class="error">{{ error }}</p>
+  {% endif %}
+
+  {% if links %}
+  <table>
+    <thead><tr><th>Slug</th><th>Target</th><th>Hits</th></tr></thead>
+    <tbody>
+      {% for link in links %}
+      <tr>
+        <td><a href="/{{ link.slug }}"><code>{{ link.slug }}</code></a></td>
+        <td class="target">{{ link.target_url }}</td>
+        <td>{{ link.hits }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>No links yet.</p>
+  {% endif %}
+</body>
+</html>
